@@ -47,7 +47,16 @@ int main( int argc, char** argv )
 		erode(inRangeOfGreen, eroded, element);
 
 		Mat dilated;
-		erode(inRangeOfGreen, dilated, element);
+		dilate(inRangeOfGreen, dilated, element);
+
+		// vector< vector<Point> > contours;
+		// findContours(dilated, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
+
+		// // you could also reuse img1 here
+		// Mat mask = Mat::zeros(img1.rows, img1.cols, CV_8UC1);
+
+		// // CV_FILLED fills the connected components found
+		// drawContours(mask, contours, -1, Scalar(255), CV_FILLED);
 
 
 		cv::imshow( "main", frame );
