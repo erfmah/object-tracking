@@ -16,6 +16,7 @@ int main( int argc, char** argv )
 	cv::namedWindow( "inRange", cv::WINDOW_AUTOSIZE );
 	cv::namedWindow( "Erode", cv::WINDOW_AUTOSIZE );
 	cv::namedWindow( "Dilate", cv::WINDOW_AUTOSIZE );
+	cv::namedWindow( "Countours", cv::WINDOW_AUTOSIZE );
 
 
 	cv::Mat frame;
@@ -49,14 +50,14 @@ int main( int argc, char** argv )
 		Mat dilated;
 		dilate(inRangeOfGreen, dilated, element);
 
-		// vector< vector<Point> > contours;
-		// findContours(dilated, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
+		vector< vector<Point> > contours;
+		findContours(dilated, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
 
-		// // you could also reuse img1 here
-		// Mat mask = Mat::zeros(img1.rows, img1.cols, CV_8UC1);
+		// you could also reuse img1 here
+		Mat contoursDrawed = Mat::zeros(img1.rows, img1.cols, CV_8UC1);
 
-		// // CV_FILLED fills the connected components found
-		// drawContours(mask, contours, -1, Scalar(255), CV_FILLED);
+		// CV_FILLED fills the connected components found
+		drawContours(mask, contoursDrawed, -1, Scalar(255), CV_FILLED);
 
 
 		cv::imshow( "main", frame );
@@ -65,6 +66,7 @@ int main( int argc, char** argv )
 		cv::imshow( "inRange", inRangeOfGreen );
 		cv::imshow( "Erode", eroded );
 		cv::imshow( "Dilate", dilated );
+		cv::imshow( "Countours", contoursDrawed );
 
 		if (waitKey(30) >= 0)
 			break;
