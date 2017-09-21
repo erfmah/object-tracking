@@ -14,6 +14,9 @@ int main( int argc, char** argv )
 	cv::namedWindow( "gaussian blur", cv::WINDOW_AUTOSIZE );
 	cv::namedWindow( "hsv", cv::WINDOW_AUTOSIZE );
 	cv::namedWindow( "inRange", cv::WINDOW_AUTOSIZE );
+	cv::namedWindow( "Erode", cv::WINDOW_AUTOSIZE );
+	cv::namedWindow( "Dilate", cv::WINDOW_AUTOSIZE );
+
 
 	cv::Mat frame;
 	cv::VideoCapture g_cap(0);
@@ -35,10 +38,25 @@ int main( int argc, char** argv )
 		Mat inRangeOfGreen;
 		inRange(HSVframe, greenLower, greenUpper, inRangeOfGreen);
 
+
+		int erosion_size = 6;  
+      Mat element = getStructuringElement(cv::MORPH_CROSS,
+              cv::Size(2 * erosion_size + 1, 2 * erosion_size + 1),
+              cv::Point(erosion_size, erosion_size) );
+		Mat eroded;
+		erode(inRangeOfGreen, eroded, element);
+
+		Mat dilated;
+		erode(inRangeOfGreen, dilated, element);
+
+
 		cv::imshow( "main", frame );
 		cv::imshow( "gaussian blur", gaussianBlurred );
 		cv::imshow( "hsv", HSVframe );
 		cv::imshow( "inRange", inRangeOfGreen );
+		cv::imshow( "Erode", eroded );
+		cv::imshow( "Dilate", dilated );
+
 		if (waitKey(30) >= 0)
 			break;
 
