@@ -11,15 +11,34 @@ int main( int argc, char** argv )
 {
 
 	cv::namedWindow( "main", cv::WINDOW_AUTOSIZE );
+	cv::namedWindow( "gaussian blur", cv::WINDOW_AUTOSIZE );
+	cv::namedWindow( "hsv", cv::WINDOW_AUTOSIZE );
+	cv::namedWindow( "inRange", cv::WINDOW_AUTOSIZE );
+
 	cv::Mat frame;
 	cv::VideoCapture g_cap(0);
 
+	Scalar greenLower(29, 86, 6);
+	Scalar greenUpper(64, 255, 255);
 	while(true) 
 	{
 
-		g_cap >> frame; 
+		g_cap >> frame	; 
+
+
+		Mat gaussianBlurred;
+		GaussianBlur(frame, gaussianBlurred, Size(9, 9), 0, 0);
+
+		Mat HSVframe;
+		cvtColor(gaussianBlurred, HSVframe, CV_BGR2HSV);
+
+		Mat inRangeOfGreen;
+		inRange(HSVframe, greenLower, greenUpper, inRangeOfGreen);
 
 		cv::imshow( "main", frame );
+		cv::imshow( "gaussian blur", gaussianBlurred );
+		cv::imshow( "hsv", HSVframe );
+		cv::imshow( "inRange", inRangeOfGreen );
 		if (waitKey(30) >= 0)
 			break;
 
