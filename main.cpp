@@ -2,15 +2,60 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include <iostream>
 #include <fstream>
+#include <stdio.h>   /* Standard input/output definitions */
+#include <string.h>  /* String function definitions */
+#include <unistd.h>  /* UNIX standard function definitions */
+#include <fcntl.h>   /* File control definitions */
+#include <errno.h>   /* Error number definitions */
+#include <termios.h> /* POSIX terminal control definitions */
+#include <string.h>
+#include <stdlib.h>
 
 using namespace std;
 using namespace cv;
 
+int fd;
+int open_port(void)
+{
+  int fd; /* File descriptor for the port */
+
+
+  fd = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY | O_NDELAY);
+  if (fd == -1)
+  {
+   /*
+    * Could not open the port.
+    */
+
+    perror("open_port: Unable to open /dev/ttyf1 - ");
+  }
+  else
+    fcntl(fd, F_SETFL, 0);
+
+  return (fd);
+}
+void init() 
+{
+	fd = open_port();
+	cv::namedWindow( "main", cv::WINDOW_AUTOSIZE );
+}
+int rotate_camera(int delta)
+{
+	//int fd = open_port();
+	char s[13];
+	sprintf(s, "%d", delta);
+	strcat(s, "\n");
+	int n = write(fd, s, strlen(s));
+	if (n < 0)
+	  fputs("write() of 4 bytes failed!\n", stderr);
+	return 0;
+}
+
 
 int main( int argc, char** argv ) 
 {
+	init();
 
-	cv::namedWindow( "main", cv::WINDOW_AUTOSIZE );
 	// cv::namedWindow( "gaussian blur", cv::WINDOW_AUTOSIZE );
 	// cv::namedWindow( "hsv", cv::WINDOW_AUTOSIZE );
 	// cv::namedWindow( "inRange", cv::WINDOW_AUTOSIZE );
@@ -18,9 +63,9 @@ int main( int argc, char** argv )
 	// cv::namedWindow( "Dilate", cv::WINDOW_AUTOSIZE );
 	// cv::namedWindow( "Countours", cv::WINDOW_AUTOSIZE );
 
-
+	double w, h;
 	cv::Mat frame;
-	cv::VideoCapture g_cap(0);
+	cv::VideoCapture g_cap(1);
 
 	Scalar greenLower(29, 86, 6);
 	Scalar greenUpper(64, 255, 255);
@@ -33,9 +78,9 @@ int main( int argc, char** argv )
 	while(true) 
 	{
 
-		g_cap >> frame	; 
-
-
+		g_cap >> frame;
+		w = frame.cols;
+		h = frame.rows; 
 		Mat gaussianBlurred;
 		GaussianBlur(frame, gaussianBlurred, Size(9, 9), 0, 0);
 
@@ -47,9 +92,9 @@ int main( int argc, char** argv )
 
 
 		int erosion_size = 6;  
-      Mat element = getStructuringElement(cv::MORPH_CROSS,
-              cv::Size(2 * erosion_size + 1, 2 * erosion_size + 1),
-              cv::Point(erosion_size, erosion_size) );
+      	Mat element = getStructuringElement(cv::MORPH_CROSS,
+        cv::Size(2 * erosion_size + 1, 2 * erosion_size + 1),
+        cv::Point(erosion_size, erosion_size) );
 		Mat eroded;
 		erode(inRangeOfGreen, eroded, element);
 
@@ -83,6 +128,16 @@ int main( int argc, char** argv )
 			minEnclosingCircle( contours_poly[i], center[i], radius[i] );
 			circle( frame, center[i], (int)radius[i], color, 2, 8, 0 );
 			movingPath.push_back(center[i]);
+
+
+			double rotated = (w / 2) - center[0].x;
+
+			double thresh = 20;
+			if (rotated < -1 * thresh)
+				rotate_camera(-1);
+			if (rotated > thresh)
+				rotate_camera(1);
+				
 		}
 		if (movingPath.size() > 2)
 			for (int i = 0; i < movingPath.size() - 1; ++i)
@@ -101,7 +156,6 @@ int main( int argc, char** argv )
 		// cv::imshow( "Erode", eroded );
 		// cv::imshow( "Dilate", dilated );
 		// cv::imshow( "Countours", contoursDrawed );
-
 		if (waitKey(30) >= 0)
 			break;
 
